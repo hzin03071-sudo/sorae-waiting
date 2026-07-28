@@ -3,41 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>내 대기번호</title>
-  <link rel="stylesheet" href="./assets/style.css">
+  <title>내 대기 현황</title>
+  <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-  <header class="hero compact">
-    <div class="wrap">
-      <p class="eyebrow">2026 소래포구축제</p>
+  <header class="hero hero-small">
+    <div class="container">
+      <p class="kicker">2026 소래포구축제</p>
       <h1>내 대기 현황</h1>
     </div>
   </header>
 
-  <main class="wrap narrow">
-    <section id="waitingCard" class="card waiting-card">
-      <p id="boothName" class="tag"></p>
-      <p class="muted">내 대기번호</p>
+  <main class="container ticket-page">
+    <section class="ticket-card">
+      <p id="ticketBooth" class="booth-label">체험명</p>
+      <p class="sub-label">내 대기번호</p>
       <div id="ticketNumber" class="ticket-number">-</div>
 
-      <div id="callMessage" class="call-message">대기 현황을 확인하고 있습니다.</div>
+      <div id="statusMessage" class="status-message">대기 현황을 확인하고 있습니다.</div>
 
-      <div class="metrics vertical">
-        <div><span>현재 호출</span><strong id="currentRange">-</strong></div>
-        <div><span>내 앞 대기팀</span><strong id="aheadCount">-</strong></div>
-        <div><span>예상 대기시간</span><strong id="estimateTime">-</strong></div>
+      <div class="ticket-stats">
+        <div>
+          <span>현재 입장</span>
+          <strong id="currentCall">-</strong>
+        </div>
+        <div>
+          <span>내 앞 대기팀</span>
+          <strong id="aheadTeams">-</strong>
+        </div>
+        <div>
+          <span>예상 대기시간</span>
+          <strong id="estimatedWait">-</strong>
+        </div>
       </div>
 
-      <div class="recommend">
+      <section class="recommend-card">
         <strong>기다리는 동안 둘러보세요</strong>
         <p>먹거리존 · 수산시장 · K-뷰티존</p>
-      </div>
+      </section>
 
-      <button id="cancelButton" class="danger-outline">대기 취소</button>
-      <a class="text-link" href="./index.html">다른 체험 보기</a>
+      <button id="cancelReservation" class="btn btn-danger-outline">대기 취소</button>
+      <a href="/" class="back-link">다른 체험 보기</a>
     </section>
   </main>
 
-  <script type="module" src="./assets/waiting.js"></script>
+  <script type="module" src="/assets/waiting.js"></script>
 </body>
 </html>

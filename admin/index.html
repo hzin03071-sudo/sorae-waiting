@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>소래포구축제 웨이팅 관리자</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <section id="loginSection" class="admin-login-page">
+    <form id="loginForm" class="login-card">
+      <p class="kicker">2026 소래포구축제</p>
+      <h1>운영자 로그인</h1>
+      <p class="muted">관리자 계정으로 로그인해주세요.</p>
+
+      <label>
+        이메일
+        <input id="adminEmail" type="email" required autocomplete="username">
+      </label>
+
+      <label>
+        비밀번호
+        <input id="adminPassword" type="password" required autocomplete="current-password">
+      </label>
+
+      <button class="btn btn-primary" type="submit">로그인</button>
+      <p id="loginError" class="error-text"></p>
+    </form>
+  </section>
+
+  <section id="dashboardSection" class="hidden">
+    <header class="admin-header">
+      <div class="container admin-head-row">
+        <div>
+          <p class="kicker">2026 소래포구축제</p>
+          <h1>웨이팅 운영 관리자</h1>
+        </div>
+        <button id="logoutButton" class="btn btn-light small-btn">로그아웃</button>
+      </div>
+    </header>
+
+    <main class="container main-space">
+      <section class="admin-toolbar">
+        <div>
+          <strong>실시간 운영 현황</strong>
+          <p class="muted">다음 5팀 호출 버튼을 누르면 방문객 화면에 즉시 반영됩니다.</p>
+        </div>
+        <button id="initializeButton" class="btn btn-secondary small-btn">체험 4종 초기 생성</button>
+      </section>
+
+      <section id="adminGrid" class="admin-grid"></section>
+      <p id="adminMessage" class="center-message"></p>
+    </main>
+  </section>
+
+  <script type="module" src="/assets/admin.js"></script>
+</body>
+</html>
