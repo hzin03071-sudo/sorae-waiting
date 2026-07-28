@@ -1,0 +1,68 @@
+:root{
+  --navy:#073b5c;--blue:#087ea4;--sky:#eaf7fb;--white:#fff;
+  --ink:#16313f;--muted:#6b7c86;--line:#dbe8ee;--danger:#b42318;
+  font-family:Pretendard,"Noto Sans KR",system-ui,sans-serif;color:var(--ink)
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f5fafc}
+button,input,select{font:inherit}
+.wrap{width:min(1100px,calc(100% - 32px));margin:auto}
+.narrow{max-width:560px}
+.hero,.admin-header{background:linear-gradient(135deg,var(--navy),var(--blue));color:white;padding:42px 0}
+.hero.compact{padding:28px 0}
+.hero h1,.admin-header h1{margin:2px 0 8px;font-size:clamp(30px,5vw,46px)}
+.eyebrow{font-weight:800;letter-spacing:.04em;margin:0 0 6px}
+main{padding:28px 0 60px}
+.notice,.toolbar{background:white;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+.card{background:white;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 8px 28px rgba(10,70,95,.08)}
+.card-top,.row-between{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.card h2{margin:4px 0 0}
+.tag{color:var(--blue);font-weight:800;margin:0}
+.status{font-size:13px;background:#e8f7ef;color:#067647;padding:6px 9px;border-radius:999px;font-weight:800}
+.status.closed{background:#f2f4f7;color:#667085}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.metrics div{background:var(--sky);padding:13px;border-radius:14px}
+.metrics span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.metrics strong{font-size:17px}
+.primary,.secondary,.ghost,.danger-outline{width:100%;border:0;border-radius:13px;padding:14px 16px;font-weight:850;cursor:pointer}
+.primary{background:var(--blue);color:white}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.secondary{background:#eef5f7;color:var(--navy);margin-top:9px}
+.ghost{width:auto;background:rgba(255,255,255,.14);color:white}
+.danger-outline{background:white;color:var(--danger);border:1px solid #f1b3ad;margin-top:18px}
+dialog{border:0;background:transparent;padding:14px;width:min(520px,100%)}
+dialog::backdrop{background:rgba(4,24,34,.66)}
+.dialog-card{position:relative;background:white;border-radius:22px;padding:24px;display:grid;gap:15px}
+.close{position:absolute;right:16px;top:12px;border:0;background:none;font-size:30px;cursor:pointer}
+label{display:grid;gap:7px;font-weight:750}
+input,select{width:100%;border:1px solid #cbdde5;border-radius:12px;padding:13px;background:white}
+.check{grid-template-columns:22px 1fr;align-items:start;font-weight:500;font-size:14px}
+.check input{width:auto;margin-top:2px}
+.center-page{min-height:100vh;display:grid;align-items:center}
+.stack{display:grid;gap:14px}
+.error{color:var(--danger)}
+.waiting-card{text-align:center}
+.ticket-number{font-size:88px;line-height:1;font-weight:950;color:var(--navy);margin:12px 0 20px}
+.muted{color:var(--muted)}
+.call-message{padding:16px;border-radius:14px;background:#eef5f7;font-weight:850}
+.call-message.called{background:#fff0c2;color:#7a4d00;font-size:22px;animation:pulse 1.2s infinite}
+.call-message.soon{background:#fff6e6;color:#934d00}
+.call-message.cancelled{background:#fef3f2;color:var(--danger)}
+.call-message.done{background:#ecfdf3;color:#067647}
+.metrics.vertical{grid-template-columns:1fr;text-align:left}
+.recommend{background:#fff8e8;border-radius:14px;padding:15px;margin-top:16px}
+.text-link{display:block;margin-top:14px;color:var(--blue)}
+.toolbar{display:flex;align-items:center;gap:14px}
+.toolbar .secondary{width:auto;margin:0}
+.big-current{text-align:center;background:var(--navy);color:white;border-radius:16px;padding:18px;margin-top:18px}
+.big-current span{display:block;font-size:13px;opacity:.75}
+.big-current strong{font-size:34px}
+.switch-label{display:flex;gap:8px;align-items:center}
+.switch-label input{width:auto}
+@keyframes pulse{50%{transform:scale(1.02)}}
+@media(max-width:600px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .metrics div:last-child{grid-column:1/-1}
+  .toolbar{align-items:flex-start;flex-direction:column}
+}

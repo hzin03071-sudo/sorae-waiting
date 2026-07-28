@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>웨이팅 운영자</title>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="wrap row-between">
+      <div>
+        <p class="eyebrow">2026 소래포구축제</p>
+        <h1>웨이팅 운영</h1>
+      </div>
+      <button id="logoutButton" class="ghost">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="toolbar">
+      <button id="initializeButton" class="secondary">체험 4종 초기 생성</button>
+      <span id="adminMessage" class="muted"></span>
+    </div>
+    <section id="adminGrid" class="grid"></section>
+  </main>
+
+  <template id="adminTemplate">
+    <article class="card admin-card">
+      <div class="card-top">
+        <div>
+          <p class="tag booth-tag"></p>
+          <h2 class="booth-title"></h2>
+        </div>
+        <label class="switch-label">운영
+          <input class="open-toggle" type="checkbox">
+        </label>
+      </div>
+
+      <div class="big-current">
+        <span>현재 입장</span>
+        <strong class="current-range">-</strong>
+      </div>
+
+      <div class="metrics">
+        <div><span>대기팀</span><strong class="waiting-count">0팀</strong></div>
+        <div><span>마지막 번호</span><strong class="last-number">0</strong></div>
+        <div><span>누적 참여 인원</span><strong class="total-people">0명</strong></div>
+      </div>
+
+      <button class="primary next-button">다음 5팀 입장</button>
+      <button class="secondary reset-button">당일 번호 초기화</button>
+    </article>
+  </template>
+
+  <script type="module" src="./assets/admin.js"></script>
+</body>
+</html>

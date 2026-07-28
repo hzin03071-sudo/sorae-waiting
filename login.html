@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>운영자 로그인</title>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <main class="wrap narrow center-page">
+    <section class="card">
+      <p class="eyebrow">소래포구축제</p>
+      <h1>운영자 로그인</h1>
+      <form id="loginForm" class="stack">
+        <label>이메일
+          <input id="email" type="email" required>
+        </label>
+        <label>비밀번호
+          <input id="password" type="password" required>
+        </label>
+        <button class="primary" type="submit">로그인</button>
+        <p id="loginError" class="error"></p>
+      </form>
+    </section>
+  </main>
+  <script type="module" src="./assets/login.js"></script>
+</body>
+</html>

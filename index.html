@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>소래포구축제 전자 웨이팅</title>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">2026 소래포구축제</p>
+      <h1>전자 웨이팅</h1>
+      <p>체험을 선택하고 대기번호를 받아주세요.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="notice" class="notice">실시간 대기 현황을 불러오는 중입니다.</div>
+    <section id="boothList" class="grid"></section>
+  </main>
+
+  <template id="boothTemplate">
+    <article class="card">
+      <div class="card-top">
+        <div>
+          <p class="tag"></p>
+          <h2 class="booth-name"></h2>
+        </div>
+        <span class="status"></span>
+      </div>
+      <div class="metrics">
+        <div><span>현재 호출</span><strong class="current"></strong></div>
+        <div><span>대기</span><strong class="waiting"></strong></div>
+        <div><span>예상</span><strong class="estimate"></strong></div>
+      </div>
+      <button class="primary reserve-btn">대기 등록</button>
+    </article>
+  </template>
+
+  <dialog id="reserveDialog">
+    <form id="reserveForm" method="dialog" class="dialog-card">
+      <button type="button" class="close" id="closeDialog" aria-label="닫기">×</button>
+      <p class="eyebrow">대기 등록</p>
+      <h2 id="selectedBoothName"></h2>
+
+      <label>예약자 이름
+        <input id="customerName" maxlength="20" required placeholder="예: 홍길동">
+      </label>
+
+      <label>전화번호 뒤 4자리
+        <input id="phoneLast4" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="1234">
+      </label>
+
+      <label>참여 인원
+        <select id="partySize">
+          <option value="1">1명</option>
+          <option value="2">2명</option>
+          <option value="3">3명</option>
+          <option value="4">4명</option>
+          <option value="5">5명</option>
+          <option value="6">6명</option>
+        </select>
+      </label>
+
+      <label class="check">
+        <input id="privacyAgree" type="checkbox" required>
+        <span>웨이팅 운영을 위한 개인정보 수집·이용에 동의합니다.</span>
+      </label>
+
+      <button class="primary" id="submitReserve" type="submit">대기번호 받기</button>
+    </form>
+  </dialog>
+
+  <script type="module" src="./assets/app.js"></script>
+</body>
+</html>
