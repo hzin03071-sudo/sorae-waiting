@@ -27,7 +27,7 @@ const VAPID_KEY =
 
 
 /* ==================================================
-   예약번호 확인
+   예약 ID 확인
 ================================================== */
 
 const params = new URLSearchParams(window.location.search);
@@ -38,8 +38,7 @@ const reservationId =
 
 
 /* ==================================================
-   HTML 요소 찾기
-   기존 HTML의 ID가 조금 달라도 찾도록 구성
+   HTML 요소 검색
 ================================================== */
 
 function findElement(...selectors) {
@@ -116,7 +115,7 @@ const notificationStatusElement = findElement(
 
 
 /* ==================================================
-   현재 데이터
+   현재 상태
 ================================================== */
 
 let currentReservation = null;
@@ -125,12 +124,15 @@ let currentBooth = null;
 let reservationUnsubscribe = null;
 let boothUnsubscribe = null;
 
+let currentBoothId = null;
+
 let serviceWorkerRegistration = null;
 let notificationProcessing = false;
+let notificationListenerAdded = false;
 
 
 /* ==================================================
-   화면 기본 처리
+   페이지 시작
 ================================================== */
 
 if (!reservationId) {
@@ -150,15 +152,38 @@ async function initializePage() {
   try {
     await ensureAnonymousLogin();
 
-    await registerMessagingServiceWorker();
+    /*
+     * 예약 조회와 버튼 연결을 먼저 실행한다.
+     * 서비스워커 오류 때문에 버튼이 멈추지 않도록 한다.
+     */
 
     listenReservation();
-
     prepareNotificationButton();
-
     listenForegroundMessages();
+
+    /*
+     * 서비스워커는 별도로 등록한다.
+     */
+
+    try {
+      await registerMessagingServiceWorker();
+    } catch (serviceWorkerError) {
+      console.error(
+        "서비스워커 사전 등록 오류:",
+        serviceWorkerError
+      );
+
+      serviceWorkerRegistration = null;
+
+      setNotificationStatus(
+        "알림 버튼을 눌러 알림 등록을 다시 시도해주세요."
+      );
+    }
   } catch (error) {
-    console.error("대기 화면 초기화 오류:", error);
+    console.error(
+      "대기 화면 초기화 오류:",
+      error
+    );
 
     showPageError(
       "대기 정보를 불러오는 중 오류가 발생했습니다."
@@ -177,7 +202,7 @@ async function ensureAnonymousLogin() {
   }
 
   return new Promise((resolve, reject) => {
-    let loginStarted = false;
+    let signInStarted = false;
 
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -189,15 +214,17 @@ async function ensureAnonymousLogin() {
           return;
         }
 
-        if (loginStarted) return;
+        if (signInStarted) {
+          return;
+        }
 
-        loginStarted = true;
+        signInStarted = true;
 
         try {
-          const result = await signInAnonymously(auth);
+          const result =
+            await signInAnonymously(auth);
 
           unsubscribe();
-
           resolve(result.user);
         } catch (error) {
           unsubscribe();
@@ -215,7 +242,7 @@ async function ensureAnonymousLogin() {
 
 
 /* ==================================================
-   예약 실시간 확인
+   예약 실시간 조회
 ================================================== */
 
 function listenReservation() {
@@ -249,14 +276,19 @@ function listenReservation() {
       renderReservation();
 
       if (currentReservation.boothId) {
-        listenBooth(currentReservation.boothId);
+        listenBooth(
+          currentReservation.boothId
+        );
       }
 
       restoreNotificationState();
     },
 
     (error) => {
-      console.error("예약 조회 오류:", error);
+      console.error(
+        "예약 조회 오류:",
+        error
+      );
 
       showPageError(
         "대기 신청 정보를 불러오지 못했습니다."
@@ -267,13 +299,12 @@ function listenReservation() {
 
 
 /* ==================================================
-   체험 부스 실시간 확인
+   체험 부스 실시간 조회
 ================================================== */
 
 function listenBooth(boothId) {
   if (
-    currentBooth &&
-    currentBooth.id === boothId &&
+    currentBoothId === boothId &&
     boothUnsubscribe
   ) {
     return;
@@ -282,6 +313,8 @@ function listenBooth(boothId) {
   if (boothUnsubscribe) {
     boothUnsubscribe();
   }
+
+  currentBoothId = boothId;
 
   const boothRef = doc(
     db,
@@ -295,9 +328,7 @@ function listenBooth(boothId) {
     (snapshot) => {
       if (!snapshot.exists()) {
         currentBooth = null;
-
         renderWaitingInformation();
-
         return;
       }
 
@@ -307,22 +338,26 @@ function listenBooth(boothId) {
       };
 
       renderReservation();
-      renderWaitingInformation();
     },
 
     (error) => {
-      console.error("체험 부스 조회 오류:", error);
+      console.error(
+        "체험 부스 조회 오류:",
+        error
+      );
     }
   );
 }
 
 
 /* ==================================================
-   예약 기본정보 출력
+   예약 정보 출력
 ================================================== */
 
 function renderReservation() {
-  if (!currentReservation) return;
+  if (!currentReservation) {
+    return;
+  }
 
   const boothName =
     currentReservation.boothName ||
@@ -330,7 +365,9 @@ function renderReservation() {
     "체험 프로그램";
 
   const ticketNumber =
-    Number(currentReservation.ticketNumber || 0);
+    Number(
+      currentReservation.ticketNumber || 0
+    );
 
   setText(
     boothNameElement,
@@ -349,20 +386,27 @@ function renderReservation() {
 
 
 /* ==================================================
-   대기 현황 계산 및 출력
+   대기 현황 계산
 ================================================== */
 
 function renderWaitingInformation() {
-  if (!currentReservation) return;
+  if (!currentReservation) {
+    return;
+  }
 
   const status =
-    currentReservation.status || "waiting";
+    currentReservation.status ||
+    "waiting";
 
   const ticketNumber =
-    Number(currentReservation.ticketNumber || 0);
+    Number(
+      currentReservation.ticketNumber || 0
+    );
 
   const currentNumber =
-    Number(currentBooth?.currentNumber || 0);
+    Number(
+      currentBooth?.currentNumber || 0
+    );
 
   const capacity =
     Math.max(
@@ -373,9 +417,10 @@ function renderWaitingInformation() {
   const minutesPerTurn =
     Math.max(
       1,
-      Number(currentBooth?.minutesPerTurn || 10)
+      Number(
+        currentBooth?.minutesPerTurn || 10
+      )
     );
-
 
   const rangeStart =
     currentNumber > 0
@@ -385,19 +430,16 @@ function renderWaitingInformation() {
         )
       : 0;
 
-
   const aheadCount =
     Math.max(
       0,
       ticketNumber - currentNumber - 1
     );
 
-
   const waitingRounds =
     Math.ceil(
       aheadCount / capacity
     );
-
 
   const estimatedMinutes =
     waitingRounds * minutesPerTurn;
@@ -424,6 +466,9 @@ function renderWaitingInformation() {
     } else if (status === "cancelled") {
       estimatedTimeElement.textContent =
         "취소 완료";
+    } else if (status === "completed") {
+      estimatedTimeElement.textContent =
+        "체험 완료";
     } else if (aheadCount === 0) {
       estimatedTimeElement.textContent =
         "곧 입장";
@@ -435,7 +480,6 @@ function renderWaitingInformation() {
         )}분`;
     }
   }
-
 
   updateStatusDisplay(status);
 }
@@ -454,7 +498,8 @@ function updateStatusDisplay(status) {
 
     if (cancelButton) {
       cancelButton.disabled = true;
-      cancelButton.textContent = "입장 호출 완료";
+      cancelButton.textContent =
+        "입장 호출 완료";
     }
 
     return;
@@ -469,7 +514,8 @@ function updateStatusDisplay(status) {
 
     if (cancelButton) {
       cancelButton.disabled = true;
-      cancelButton.textContent = "대기 취소 완료";
+      cancelButton.textContent =
+        "대기 취소 완료";
     }
 
     if (notificationButton) {
@@ -488,7 +534,8 @@ function updateStatusDisplay(status) {
 
     if (cancelButton) {
       cancelButton.disabled = true;
-      cancelButton.textContent = "체험 완료";
+      cancelButton.textContent =
+        "체험 완료";
     }
 
     return;
@@ -502,7 +549,8 @@ function updateStatusDisplay(status) {
 
   if (cancelButton) {
     cancelButton.disabled = false;
-    cancelButton.textContent = "대기 취소";
+    cancelButton.textContent =
+      "대기 취소";
   }
 }
 
@@ -515,10 +563,13 @@ if (cancelButton) {
   cancelButton.addEventListener(
     "click",
     async () => {
-      if (!currentReservation) return;
+      if (!currentReservation) {
+        return;
+      }
 
       if (
-        currentReservation.status !== "waiting"
+        currentReservation.status !==
+        "waiting"
       ) {
         alert(
           "현재 상태에서는 대기를 취소할 수 없습니다."
@@ -531,10 +582,13 @@ if (cancelButton) {
         "대기 신청을 취소하시겠습니까?"
       );
 
-      if (!confirmed) return;
+      if (!confirmed) {
+        return;
+      }
 
       cancelButton.disabled = true;
-      cancelButton.textContent = "취소 처리 중...";
+      cancelButton.textContent =
+        "취소 처리 중...";
 
       try {
         await updateDoc(
@@ -543,26 +597,25 @@ if (cancelButton) {
             "reservations",
             reservationId
           ),
-
           {
             status: "cancelled",
-            cancelledAt: serverTimestamp()
+            cancelledAt:
+              serverTimestamp()
           }
         );
-
-        setText(
-          statusMessageElement,
-          "대기 신청이 취소되었습니다."
-        );
       } catch (error) {
-        console.error("대기 취소 오류:", error);
+        console.error(
+          "대기 취소 오류:",
+          error
+        );
 
         alert(
-          "대기 취소 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+          "대기 취소 중 오류가 발생했습니다."
         );
 
         cancelButton.disabled = false;
-        cancelButton.textContent = "대기 취소";
+        cancelButton.textContent =
+          "대기 취소";
       }
     }
   );
@@ -576,11 +629,11 @@ if (cancelButton) {
 async function registerMessagingServiceWorker() {
   if (!("serviceWorker" in navigator)) {
     throw new Error(
-      "이 브라우저는 서비스워커를 지원하지 않습니다."
+      "현재 브라우저는 서비스워커를 지원하지 않습니다."
     );
   }
 
-  serviceWorkerRegistration =
+  const registration =
     await navigator.serviceWorker.register(
       "/firebase-messaging-sw.js",
       {
@@ -590,35 +643,41 @@ async function registerMessagingServiceWorker() {
 
   await navigator.serviceWorker.ready;
 
-  return serviceWorkerRegistration;
+  serviceWorkerRegistration =
+    registration;
+
+  return registration;
 }
 
 
 /* ==================================================
-   알림 버튼 준비
+   알림 버튼 연결
 ================================================== */
 
 function prepareNotificationButton() {
-  if (!notificationButton) return;
-
-  if (!isNotificationSupported()) {
-    notificationButton.disabled = true;
-    notificationButton.textContent =
-      "이 브라우저에서는 알림을 사용할 수 없습니다.";
-
-    setNotificationStatus(
-      "Chrome 또는 삼성 인터넷에서 다시 열어주세요."
+  if (!notificationButton) {
+    console.error(
+      "알림 버튼을 찾지 못했습니다."
     );
 
     return;
   }
 
+  /*
+   * HTML에 disabled가 들어 있어도
+   * 자바스크립트 실행 후 활성화한다.
+   */
 
-  notificationButton.addEventListener(
-    "click",
-    enableNotifications
-  );
+  notificationButton.disabled = false;
 
+  if (!notificationListenerAdded) {
+    notificationButton.addEventListener(
+      "click",
+      enableNotifications
+    );
+
+    notificationListenerAdded = true;
+  }
 
   restoreNotificationState();
 }
@@ -638,30 +697,21 @@ function isNotificationSupported() {
 
 
 /* ==================================================
-   기존 알림 상태 복원
+   알림 상태 복원
 ================================================== */
 
 function restoreNotificationState() {
-  if (!notificationButton) return;
+  if (!notificationButton) {
+    return;
+  }
 
   if (!isNotificationSupported()) {
     notificationButton.disabled = true;
     notificationButton.textContent =
       "이 브라우저에서는 알림을 사용할 수 없습니다.";
 
-    return;
-  }
-
-
-  if (
-    Notification.permission === "denied"
-  ) {
-    notificationButton.disabled = true;
-    notificationButton.textContent =
-      "알림이 차단되어 있습니다.";
-
     setNotificationStatus(
-      "휴대전화 브라우저 설정에서 이 사이트의 알림을 허용해주세요."
+      "Chrome 또는 삼성 인터넷에서 열어주세요."
     );
 
     return;
@@ -669,7 +719,24 @@ function restoreNotificationState() {
 
 
   if (
-    currentReservation?.notificationEnabled === true &&
+    Notification.permission ===
+    "denied"
+  ) {
+    notificationButton.disabled = false;
+    notificationButton.textContent =
+      "알림 권한 확인하기";
+
+    setNotificationStatus(
+      "브라우저 설정에서 이 사이트의 알림 권한을 허용해주세요."
+    );
+
+    return;
+  }
+
+
+  if (
+    currentReservation
+      ?.notificationEnabled === true &&
     currentReservation?.fcmToken
   ) {
     notificationButton.disabled = true;
@@ -677,7 +744,7 @@ function restoreNotificationState() {
       "입장 알림 신청 완료";
 
     setNotificationStatus(
-      "입장 순서가 되면 이 휴대폰으로 알림을 보내드립니다."
+      "입장 순서가 되면 이 휴대폰으로 알려드립니다."
     );
 
     return;
@@ -689,35 +756,40 @@ function restoreNotificationState() {
     "입장 알림 받기";
 
   if (
-    Notification.permission === "granted"
+    Notification.permission ===
+    "granted"
   ) {
     setNotificationStatus(
-      "버튼을 눌러 입장 알림을 등록해주세요."
+      "버튼을 눌러 이 휴대폰을 등록해주세요."
+    );
+  } else {
+    setNotificationStatus(
+      "입장 순서가 되면 알림을 보내드립니다."
     );
   }
 }
 
 
 /* ==================================================
-   푸시 알림 등록
+   알림 등록
 ================================================== */
 
 async function enableNotifications() {
-  if (
-    notificationProcessing ||
-    !notificationButton
-  ) {
+  if (notificationProcessing) {
+    return;
+  }
+
+  if (!notificationButton) {
     return;
   }
 
   if (!currentReservation) {
     alert(
-      "대기 신청 정보를 불러온 후 다시 시도해주세요."
+      "대기 신청 정보를 불러오는 중입니다. 잠시 후 다시 눌러주세요."
     );
 
     return;
   }
-
 
   notificationProcessing = true;
 
@@ -726,34 +798,29 @@ async function enableNotifications() {
     "알림 설정 중...";
 
   setNotificationStatus(
-    "잠시만 기다려주세요."
+    "알림 기기를 등록하고 있습니다."
   );
-
 
   try {
     if (!isNotificationSupported()) {
       throw new Error(
-        "이 브라우저에서는 웹 알림을 지원하지 않습니다."
+        "현재 브라우저에서는 웹 알림을 지원하지 않습니다."
       );
     }
 
-
     let permission =
       Notification.permission;
-
 
     if (permission === "default") {
       permission =
         await Notification.requestPermission();
     }
 
-
     if (permission === "denied") {
       throw new Error(
-        "알림 권한이 차단되었습니다. 브라우저 설정에서 알림을 허용해주세요."
+        "알림이 차단되어 있습니다. 브라우저 설정에서 알림 권한을 허용해주세요."
       );
     }
-
 
     if (permission !== "granted") {
       throw new Error(
@@ -761,20 +828,19 @@ async function enableNotifications() {
       );
     }
 
-
     if (!serviceWorkerRegistration) {
-      await registerMessagingServiceWorker();
+      serviceWorkerRegistration =
+        await registerMessagingServiceWorker();
     }
-
 
     const token = await getToken(
       messaging,
       {
         vapidKey: VAPID_KEY,
-        serviceWorkerRegistration
+        serviceWorkerRegistration:
+          serviceWorkerRegistration
       }
     );
-
 
     if (!token) {
       throw new Error(
@@ -782,6 +848,26 @@ async function enableNotifications() {
       );
     }
 
+    /*
+     * 기존 예약의 ownerUid와 현재 로그인 UID가
+     * 다르면 Firestore Rules에서 저장이 거부될 수 있다.
+     */
+
+    const currentUid =
+      auth.currentUser?.uid || "";
+
+    const reservationOwnerUid =
+      currentReservation.ownerUid || "";
+
+    if (
+      reservationOwnerUid &&
+      currentUid &&
+      reservationOwnerUid !== currentUid
+    ) {
+      throw new Error(
+        "이 예약은 다른 브라우저에서 생성되었습니다. 현재 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요."
+      );
+    }
 
     await updateDoc(
       doc(
@@ -789,44 +875,29 @@ async function enableNotifications() {
         "reservations",
         reservationId
       ),
-
       {
         fcmToken: token,
         notificationEnabled: true,
         notificationEnabledAt:
           serverTimestamp(),
-
         notificationUserAgent:
           navigator.userAgent
       }
     );
-
 
     notificationButton.disabled = true;
     notificationButton.textContent =
       "입장 알림 신청 완료";
 
     setNotificationStatus(
-      "입장 순서가 되면 이 휴대폰으로 알림을 보내드립니다."
+      "입장 순서가 되면 이 휴대폰으로 알려드립니다."
     );
 
-
-    new Notification(
+    await showLocalNotification(
       "2026 소래포구축제",
-      {
-        body:
-          "입장 알림 신청이 완료되었습니다.",
-
-        icon:
-          "/icons/icon-192.png",
-
-        badge:
-          "/icons/icon-192.png",
-
-        tag:
-          "sorae-notification-test"
-      }
+      "입장 알림 신청이 완료되었습니다."
     );
+
   } catch (error) {
     console.error(
       "알림 설정 오류:",
@@ -837,15 +908,12 @@ async function enableNotifications() {
     notificationButton.textContent =
       "입장 알림 다시 시도";
 
-    setNotificationStatus(
-      error.message ||
-      "알림 설정에 실패했습니다."
-    );
+    const message =
+      getFriendlyErrorMessage(error);
 
-    alert(
-      error.message ||
-      "알림 설정에 실패했습니다. 잠시 후 다시 시도해주세요."
-    );
+    setNotificationStatus(message);
+    alert(message);
+
   } finally {
     notificationProcessing = false;
   }
@@ -853,56 +921,84 @@ async function enableNotifications() {
 
 
 /* ==================================================
-   화면을 보고 있을 때 알림 수신
+   신청 완료 테스트 알림
+================================================== */
+
+async function showLocalNotification(
+  title,
+  body
+) {
+  try {
+    if (
+      Notification.permission !==
+      "granted"
+    ) {
+      return;
+    }
+
+    if (!serviceWorkerRegistration) {
+      serviceWorkerRegistration =
+        await registerMessagingServiceWorker();
+    }
+
+    await serviceWorkerRegistration
+      .showNotification(
+        title,
+        {
+          body,
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+          tag: "sorae-notification-test",
+          data: {
+            url: window.location.href
+          }
+        }
+      );
+  } catch (error) {
+    /*
+     * 테스트 알림 실패는 토큰 저장 성공과 별개이므로
+     * 등록 자체를 실패 처리하지 않는다.
+     */
+
+    console.warn(
+      "신청 완료 알림 표시 오류:",
+      error
+    );
+  }
+}
+
+
+/* ==================================================
+   화면을 보고 있을 때 푸시 수신
 ================================================== */
 
 function listenForegroundMessages() {
-  if (!messaging) return;
+  if (!messaging) {
+    return;
+  }
 
   try {
     onMessage(
       messaging,
 
-      (payload) => {
+      async (payload) => {
         console.log(
           "화면 활성 상태 메시지:",
           payload
         );
 
-
         const title =
           payload.notification?.title ||
           "2026 소래포구축제";
-
 
         const body =
           payload.notification?.body ||
           "입장 순서가 되었습니다.";
 
-
-        if (
-          Notification.permission ===
-          "granted"
-        ) {
-          new Notification(
-            title,
-            {
-              body,
-
-              icon:
-                "/icons/icon-192.png",
-
-              badge:
-                "/icons/icon-192.png",
-
-              tag:
-                `sorae-call-${reservationId}`,
-
-              renotify: true
-            }
-          );
-        }
-
+        await showLocalNotification(
+          title,
+          body
+        );
 
         alert(
           `${title}\n\n${body}`
@@ -911,10 +1007,62 @@ function listenForegroundMessages() {
     );
   } catch (error) {
     console.error(
-      "포그라운드 메시지 연결 오류:",
+      "실시간 메시지 연결 오류:",
       error
     );
   }
+}
+
+
+/* ==================================================
+   오류 문구 정리
+================================================== */
+
+function getFriendlyErrorMessage(error) {
+  const code =
+    error?.code || "";
+
+  const originalMessage =
+    error?.message || "";
+
+  if (
+    code.includes("permission-blocked") ||
+    code.includes("permission-denied")
+  ) {
+    return "알림이 차단되어 있습니다. 브라우저의 사이트 설정에서 알림을 허용해주세요.";
+  }
+
+  if (
+    code.includes("unsupported-browser")
+  ) {
+    return "현재 브라우저에서는 웹 알림을 지원하지 않습니다.";
+  }
+
+  if (
+    code.includes("token-subscribe-failed")
+  ) {
+    return "알림 기기 등록에 실패했습니다. 브라우저를 완전히 종료한 뒤 다시 시도해주세요.";
+  }
+
+  if (
+    code.includes("invalid-vapid-key")
+  ) {
+    return "웹 푸시 인증키가 올바르지 않습니다.";
+  }
+
+  if (
+    code.includes("permission-denied") ||
+    originalMessage.includes(
+      "Missing or insufficient permissions"
+    )
+  ) {
+    return "현재 예약의 수정 권한이 없습니다. 이 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요.";
+  }
+
+  return (
+    originalMessage ||
+    "알림 설정에 실패했습니다. 잠시 후 다시 시도해주세요."
+  );
 }
 
 
@@ -923,14 +1071,18 @@ function listenForegroundMessages() {
 ================================================== */
 
 function setText(element, text) {
-  if (!element) return;
+  if (!element) {
+    return;
+  }
 
   element.textContent = text;
 }
 
 
 function setNotificationStatus(message) {
-  if (!notificationStatusElement) return;
+  if (!notificationStatusElement) {
+    return;
+  }
 
   notificationStatusElement.textContent =
     message;
@@ -956,7 +1108,7 @@ function showPageError(message) {
 
 
 /* ==================================================
-   페이지 종료 시 실시간 연결 해제
+   페이지 종료
 ================================================== */
 
 window.addEventListener(
