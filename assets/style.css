@@ -1,164 +1,548 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
+:root {
+  --primary: #075d7a;
+  --primary-dark: #04475e;
+  --secondary: #e9f5f8;
+  --danger: #b5413c;
+  --danger-light: #fff4f3;
+  --text: #18313d;
+  --muted: #70808a;
+  --line: #dce6ea;
+  --background: #f4f8fa;
+  --white: #ffffff;
+  --shadow: 0 14px 35px rgba(17, 59, 76, 0.12);
+  --radius-large: 28px;
+  --radius-medium: 20px;
+  --radius-small: 14px;
+}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
+* {
+  box-sizing: border-box;
+}
 
-  <meta name="theme-color" content="#ffffff">
+html {
+  min-width: 320px;
+  background: var(--background);
+  scroll-behavior: smooth;
+}
 
-  <title>내 대기 현황 | 2026 소래포구축제</title>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      #e8f5f8 0,
+      #f4f8fa 280px,
+      #f4f8fa 100%
+    );
+  color: var(--text);
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans KR",
+    sans-serif;
+  line-height: 1.5;
+  word-break: keep-all;
+}
 
-  <link
-    rel="stylesheet"
-    href="/assets/style.css"
-  >
-</head>
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
 
-<body>
-  <header class="hero hero-small">
-    <div class="container">
-      <p class="kicker">
-        2026 소래포구축제
-      </p>
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
 
-      <h1>
-        내 대기 현황
-      </h1>
-    </div>
-  </header>
+button {
+  cursor: pointer;
+}
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 
-  <main class="container ticket-page">
-    <section class="ticket-card">
+a {
+  color: inherit;
+}
 
-      <!-- 체험명 -->
-      <p
-        id="boothName"
-        class="booth-label"
-      >
-        체험 정보를 확인하고 있습니다.
-      </p>
+.hidden {
+  display: none !important;
+}
 
+.container {
+  width: min(100% - 32px, 720px);
+  margin: 0 auto;
+}
 
-      <!-- 대기번호 -->
-      <p class="sub-label">
-        내 대기번호
-      </p>
+.hero {
+  padding:
+    max(32px, env(safe-area-inset-top))
+    0
+    42px;
+  color: var(--white);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(255, 255, 255, 0.22),
+      transparent 36%
+    ),
+    linear-gradient(
+      135deg,
+      #064e67,
+      #0781a7
+    );
+}
 
-      <div
-        id="ticketNumber"
-        class="ticket-number"
-      >
-        -
-      </div>
+.hero-small {
+  padding-bottom: 78px;
+}
 
+.hero .kicker {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.82;
+}
 
-      <!-- 현재 상태 -->
-      <div
-        id="statusMessage"
-        class="status-message"
-        role="status"
-        aria-live="polite"
-      >
-        대기 현황을 확인하고 있습니다.
-      </div>
+.hero h1 {
+  margin: 0;
+  font-size: clamp(30px, 8vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
 
+.hero p {
+  margin-top: 12px;
+}
 
-      <!-- 대기 현황 -->
-      <div class="ticket-stats">
-        <div>
-          <span>
-            현재 입장
-          </span>
+.ticket-page {
+  position: relative;
+  z-index: 1;
+  margin-top: -44px;
+  padding-bottom:
+    max(40px, env(safe-area-inset-bottom));
+}
 
-          <strong id="currentNumber">
-            -
-          </strong>
-        </div>
+.ticket-card {
+  padding: 28px 22px;
+  overflow: hidden;
+  border: 1px solid rgba(214, 226, 232, 0.95);
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
 
-        <div>
-          <span>
-            내 앞 대기팀
-          </span>
+.booth-label {
+  margin: 0 0 6px;
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+}
 
-          <strong id="aheadCount">
-            -
-          </strong>
-        </div>
+.sub-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
 
-        <div>
-          <span>
-            예상 대기시간
-          </span>
+.ticket-number {
+  margin: 4px 0 18px;
+  color: var(--text);
+  font-size: clamp(72px, 22vw, 112px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.07em;
+  text-align: center;
+}
 
-          <strong id="estimatedTime">
-            -
-          </strong>
-        </div>
-      </div>
+.status-message {
+  margin-bottom: 22px;
+  padding: 20px 16px;
+  border: 1px solid #f2e2b8;
+  border-radius: var(--radius-medium);
+  background: #fff9e8;
+  color: #74531c;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+}
 
+.ticket-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
 
-      <!-- 주변 콘텐츠 안내 -->
-      <section class="recommend-card">
-        <strong>
-          기다리는 동안 둘러보세요
-        </strong>
+.ticket-stats > div {
+  min-height: 118px;
+  padding: 20px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-medium);
+  background: #f4f8fa;
+  text-align: center;
+}
 
-        <p>
-          먹거리존 · 수산시장 · K-뷰티존
-        </p>
-      </section>
+.ticket-stats > div:last-child {
+  grid-column: 1 / -1;
+  min-height: 104px;
+}
 
+.ticket-stats span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
 
-      <!-- 알림 신청 -->
-      <section class="notification-card">
-        <strong>
-          입장 순서를 놓치지 마세요
-        </strong>
+.ticket-stats strong {
+  display: block;
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
 
-        <p id="notificationStatus">
-          알림을 허용하면 입장 순서가 되었을 때 알려드립니다.
-        </p>
+.recommend-card,
+.notification-card {
+  margin-top: 18px;
+  padding: 22px 18px;
+  border-radius: var(--radius-medium);
+  text-align: center;
+}
 
-        <button
-          id="notificationButton"
-          class="btn btn-primary"
-          type="button"
-        >
-          입장 알림 받기
-        </button>
-      </section>
+.recommend-card {
+  background: #fff9ed;
+  color: #6d5121;
+}
 
+.recommend-card strong,
+.notification-card strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 19px;
+  font-weight: 900;
+}
 
-      <!-- 대기 취소 -->
-      <button
-        id="cancelButton"
-        class="btn btn-danger-outline"
-        type="button"
-      >
-        대기 취소
-      </button>
+.recommend-card p,
+.notification-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
 
+.notification-card {
+  border: 1px solid #d5eaf0;
+  background: #eff9fb;
+  color: var(--text);
+}
 
-      <!-- 다른 체험 -->
-      <a
-        href="/"
-        class="back-link"
-      >
-        다른 체험 보기
-      </a>
+.notification-card p {
+  margin-bottom: 16px;
+  color: var(--muted);
+}
 
-    </section>
-  </main>
+.btn {
+  display: flex;
+  width: 100%;
+  min-height: 58px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-small);
+  padding: 14px 18px;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  touch-action: manipulation;
+}
 
+.btn:not(:disabled):active {
+  transform: scale(0.985);
+}
 
-  <script
-    type="module"
-    src="/assets/waiting.js"
-  ></script>
-</body>
-</html>
+.btn-primary {
+  color: var(--white);
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    #0788ad
+  );
+  box-shadow: 0 10px 22px rgba(7, 93, 122, 0.2);
+}
+
+.btn-secondary {
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.btn-danger-outline {
+  margin-top: 18px;
+  color: var(--danger);
+  border: 1px solid #e5aaa6;
+  background: var(--danger-light);
+}
+
+.back-link {
+  display: block;
+  margin-top: 24px;
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  text-underline-offset: 4px;
+}
+
+.form-card,
+.booth-card,
+.admin-card,
+.info-card {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-medium);
+  background: var(--white);
+  box-shadow: 0 10px 26px rgba(17, 59, 76, 0.08);
+}
+
+.booth-grid,
+.admin-grid {
+  display: grid;
+  gap: 16px;
+  margin: 22px 0 40px;
+}
+
+.booth-card h2,
+.admin-card h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.booth-card p,
+.admin-card p {
+  color: var(--muted);
+}
+
+.booth-icon {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: var(--secondary);
+  font-size: 26px;
+}
+
+.booth-meta,
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.booth-meta > div,
+.admin-metrics > div {
+  padding: 14px 8px;
+  border-radius: var(--radius-small);
+  background: #f4f8fa;
+  text-align: center;
+}
+
+.booth-meta span,
+.admin-metrics span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.booth-meta strong,
+.admin-metrics strong {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.admin-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.toggle-wrap {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.toggle-wrap input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--primary);
+}
+
+.current-panel {
+  margin: 18px 0 14px;
+  padding: 18px;
+  border-radius: var(--radius-medium);
+  background:
+    linear-gradient(
+      135deg,
+      #064e67,
+      #087fa2
+    );
+  color: var(--white);
+  text-align: center;
+}
+
+.current-panel span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  opacity: 0.78;
+}
+
+.current-panel strong {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.admin-card .btn + .btn {
+  margin-top: 10px;
+}
+
+label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid #cfdce1;
+  border-radius: var(--radius-small);
+  background: var(--white);
+  padding: 13px 14px;
+  color: var(--text);
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(7, 93, 122, 0.12);
+}
+
+.form-group + .form-group {
+  margin-top: 16px;
+}
+
+.error-message {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#adminMessage {
+  min-height: 24px;
+  margin: 14px 0;
+  color: var(--primary);
+  font-weight: 800;
+  text-align: center;
+}
+
+.notice {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid #d9e8ed;
+  border-radius: var(--radius-small);
+  background: #f5fafb;
+  color: var(--text);
+}
+
+@media (min-width: 700px) {
+  .booth-grid,
+  .admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ticket-card {
+    padding: 36px;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    width: min(100% - 22px, 720px);
+  }
+
+  .hero-small {
+    padding-bottom: 66px;
+  }
+
+  .ticket-card {
+    padding: 24px 16px;
+    border-radius: 24px;
+  }
+
+  .ticket-stats {
+    gap: 9px;
+  }
+
+  .ticket-stats > div {
+    min-height: 108px;
+    padding: 17px 8px;
+  }
+
+  .ticket-stats strong {
+    font-size: 24px;
+  }
+
+  .status-message {
+    font-size: 17px;
+  }
+
+  .btn {
+    min-height: 56px;
+    font-size: 17px;
+  }
+
+  .booth-meta,
+  .admin-metrics {
+    grid-template-columns: 1fr;
+  }
+}
