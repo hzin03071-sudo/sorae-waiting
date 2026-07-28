@@ -802,6 +802,13 @@ async function enableNotifications() {
   );
 
   try {
+    alert(
+      "브라우저 알림 권한: " +
+      Notification.permission +
+      "\n\n브라우저 정보: " +
+      navigator.userAgent
+    );
+
     if (!isNotificationSupported()) {
       throw new Error(
         "현재 브라우저에서는 웹 알림을 지원하지 않습니다."
@@ -847,6 +854,72 @@ async function enableNotifications() {
         "알림 기기 정보를 발급받지 못했습니다."
       );
     }
+
+    const currentUid =
+      auth.currentUser?.uid || "";
+
+    const reservationOwnerUid =
+      currentReservation.ownerUid || "";
+
+    if (
+      reservationOwnerUid &&
+      currentUid &&
+      reservationOwnerUid !== currentUid
+    ) {
+      throw new Error(
+        "이 예약은 다른 브라우저에서 생성되었습니다. 현재 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요."
+      );
+    }
+
+    await updateDoc(
+      doc(
+        db,
+        "reservations",
+        reservationId
+      ),
+      {
+        fcmToken: token,
+        notificationEnabled: true,
+        notificationEnabledAt:
+          serverTimestamp(),
+        notificationUserAgent:
+          navigator.userAgent
+      }
+    );
+
+    notificationButton.disabled = true;
+    notificationButton.textContent =
+      "입장 알림 신청 완료";
+
+    setNotificationStatus(
+      "입장 순서가 되면 이 휴대폰으로 알려드립니다."
+    );
+
+    await showLocalNotification(
+      "2026 소래포구축제",
+      "입장 알림 신청이 완료되었습니다."
+    );
+
+  } catch (error) {
+    console.error(
+      "알림 설정 오류:",
+      error
+    );
+
+    notificationButton.disabled = false;
+    notificationButton.textContent =
+      "입장 알림 다시 시도";
+
+    const message =
+      getFriendlyErrorMessage(error);
+
+    setNotificationStatus(message);
+    alert(message);
+
+  } finally {
+    notificationProcessing = false;
+  }
+}
 
     /*
      * 기존 예약의 ownerUid와 현재 로그인 UID가
