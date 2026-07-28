@@ -1098,9 +1098,27 @@ function getFriendlyErrorMessage(error) {
   const originalMessage =
     error?.message || "";
 
+  /*
+   * Firestore 저장 권한 오류를 먼저 확인한다.
+   */
+  if (
+    code === "permission-denied" ||
+    code.includes("firestore/permission-denied") ||
+    originalMessage.includes(
+      "Missing or insufficient permissions"
+    )
+  ) {
+    return "현재 예약 정보를 수정할 권한이 없습니다. 이 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요.";
+  }
+
+  /*
+   * 실제 브라우저 알림 권한 오류
+   */
   if (
     code.includes("permission-blocked") ||
-    code.includes("permission-denied")
+    originalMessage.includes(
+      "알림이 차단되어 있습니다"
+    )
   ) {
     return "알림이 차단되어 있습니다. 브라우저의 사이트 설정에서 알림을 허용해주세요.";
   }
@@ -1123,21 +1141,11 @@ function getFriendlyErrorMessage(error) {
     return "웹 푸시 인증키가 올바르지 않습니다.";
   }
 
-  if (
-    code.includes("permission-denied") ||
-    originalMessage.includes(
-      "Missing or insufficient permissions"
-    )
-  ) {
-    return "현재 예약의 수정 권한이 없습니다. 이 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요.";
-  }
-
   return (
     originalMessage ||
     "알림 설정에 실패했습니다. 잠시 후 다시 시도해주세요."
   );
 }
-
 
 /* ==================================================
    공통 함수
