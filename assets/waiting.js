@@ -538,6 +538,10 @@ function updateStatusDisplay(status) {
         "체험 완료";
     }
 
+    if (notificationButton) {
+      notificationButton.disabled = true;
+    }
+
     return;
   }
 
@@ -802,13 +806,6 @@ async function enableNotifications() {
   );
 
   try {
-    alert(
-      "브라우저 알림 권한: " +
-      Notification.permission +
-      "\n\n브라우저 정보: " +
-      navigator.userAgent
-    );
-
     if (!isNotificationSupported()) {
       throw new Error(
         "현재 브라우저에서는 웹 알림을 지원하지 않습니다."
@@ -899,7 +896,6 @@ async function enableNotifications() {
       "2026 소래포구축제",
       "입장 알림 신청이 완료되었습니다."
     );
-
   } catch (error) {
     console.error(
       "알림 설정 오류:",
@@ -915,78 +911,6 @@ async function enableNotifications() {
 
     setNotificationStatus(message);
     alert(message);
-
-  } finally {
-    notificationProcessing = false;
-  }
-}
-
-    /*
-     * 기존 예약의 ownerUid와 현재 로그인 UID가
-     * 다르면 Firestore Rules에서 저장이 거부될 수 있다.
-     */
-
-    const currentUid =
-      auth.currentUser?.uid || "";
-
-    const reservationOwnerUid =
-      currentReservation.ownerUid || "";
-
-    if (
-      reservationOwnerUid &&
-      currentUid &&
-      reservationOwnerUid !== currentUid
-    ) {
-      throw new Error(
-        "이 예약은 다른 브라우저에서 생성되었습니다. 현재 브라우저에서 새로 대기 신청한 뒤 알림을 등록해주세요."
-      );
-    }
-
-    await updateDoc(
-      doc(
-        db,
-        "reservations",
-        reservationId
-      ),
-      {
-        fcmToken: token,
-        notificationEnabled: true,
-        notificationEnabledAt:
-          serverTimestamp(),
-        notificationUserAgent:
-          navigator.userAgent
-      }
-    );
-
-    notificationButton.disabled = true;
-    notificationButton.textContent =
-      "입장 알림 신청 완료";
-
-    setNotificationStatus(
-      "입장 순서가 되면 이 휴대폰으로 알려드립니다."
-    );
-
-    await showLocalNotification(
-      "2026 소래포구축제",
-      "입장 알림 신청이 완료되었습니다."
-    );
-
-  } catch (error) {
-    console.error(
-      "알림 설정 오류:",
-      error
-    );
-
-    notificationButton.disabled = false;
-    notificationButton.textContent =
-      "입장 알림 다시 시도";
-
-    const message =
-      getFriendlyErrorMessage(error);
-
-    setNotificationStatus(message);
-    alert(message);
-
   } finally {
     notificationProcessing = false;
   }
@@ -1101,6 +1025,7 @@ function getFriendlyErrorMessage(error) {
   /*
    * Firestore 저장 권한 오류를 먼저 확인한다.
    */
+
   if (
     code === "permission-denied" ||
     code.includes("firestore/permission-denied") ||
@@ -1112,8 +1037,9 @@ function getFriendlyErrorMessage(error) {
   }
 
   /*
-   * 실제 브라우저 알림 권한 오류
+   * 브라우저 알림 권한 오류
    */
+
   if (
     code.includes("permission-blocked") ||
     originalMessage.includes(
@@ -1146,6 +1072,7 @@ function getFriendlyErrorMessage(error) {
     "알림 설정에 실패했습니다. 잠시 후 다시 시도해주세요."
   );
 }
+
 
 /* ==================================================
    공통 함수
