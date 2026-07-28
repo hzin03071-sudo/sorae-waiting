@@ -14,6 +14,7 @@ service cloud.firestore {
 
     match /booths/{boothId} {
       allow read: if true;
+
       allow create, delete: if isAdmin();
 
       allow update: if isAdmin()
@@ -22,9 +23,12 @@ service cloud.firestore {
           && resource.data.isOpen == true
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(["lastNumber", "totalPeople"])
-          && request.resource.data.lastNumber == resource.data.lastNumber + 1
-          && request.resource.data.totalPeople > resource.data.totalPeople
-          && request.resource.data.totalPeople <= resource.data.totalPeople + 6
+          && request.resource.data.lastNumber
+               == resource.data.lastNumber + 1
+          && request.resource.data.totalPeople
+               > resource.data.totalPeople
+          && request.resource.data.totalPeople
+               <= resource.data.totalPeople + 6
         );
     }
 
@@ -35,17 +39,41 @@ service cloud.firestore {
         && request.resource.data.partySize >= 1
         && request.resource.data.partySize <= 6;
 
-      allow read: if isAdmin()
-        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      /*
+       * 예약번호를 알고 있는 사용자는
+       * 해당 예약 한 건을 조회할 수 있다.
+       * 전체 예약 목록 조회는 관리자만 가능하다.
+       */
+      allow get: if signedIn();
+      allow list: if isAdmin();
 
-      allow update: if isAdmin()
-        || (
-          signedIn()
-          && resource.data.ownerUid == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(["status", "cancelledAt"])
-          && request.resource.data.status == "cancelled"
-        );
+      /*
+       * 관리자는 모든 항목 수정 가능
+       */
+      allow update: if isAdmin();
+
+      /*
+       * 예약 소유자는 대기 취소 가능
+       */
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(["status", "cancelledAt"])
+        && request.resource.data.status == "cancelled";
+
+      /*
+       * 링크를 연 휴대폰에서 알림 기기 등록 가능
+       */
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly([
+               "fcmToken",
+               "notificationEnabled",
+               "notificationEnabledAt",
+               "notificationUserAgent"
+             ])
+        && request.resource.data.notificationEnabled == true
+        && request.resource.data.fcmToken is string;
 
       allow delete: if isAdmin();
     }
