@@ -1,105 +1,164 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap');
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
 
-:root{
-  --navy:#075985;
-  --blue:#0284c7;
-  --blue-dark:#0369a1;
-  --sky:#eaf7fb;
-  --ice:#f5fbfd;
-  --white:#fff;
-  --ink:#163244;
-  --muted:#6b7c87;
-  --line:#d7e7ee;
-  --green:#0f9f6e;
-  --red:#c2413b;
-  font-family:"Noto Sans KR",system-ui,sans-serif;
-  color:var(--ink);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--ice)}
-button,input,select{font:inherit}
-.container{width:min(1120px,calc(100% - 32px));margin:auto}
-.hidden{display:none!important}
-.hero,.admin-header{background:linear-gradient(135deg,#075985,#0891b2);color:white;padding:44px 0}
-.hero-small{padding:28px 0}
-.kicker{font-size:14px;font-weight:900;letter-spacing:.04em;margin:0 0 7px}
-h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:0}
-h2{margin:7px 0 0}
-.hero-copy{font-weight:600;margin:14px 0 0}
-.brand-row,.admin-head-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
-.hero-icon{font-size:72px}
-.main-space{padding:28px 0 60px}
-.info-banner,.active-ticket,.admin-toolbar{
-  background:white;border:1px solid var(--line);border-radius:18px;padding:16px 18px;
-  margin-bottom:20px;box-shadow:0 6px 20px rgba(7,89,133,.05)
-}
-.info-banner span,.active-ticket span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
-.active-ticket,.admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.booth-grid,.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-.booth-card,.admin-card,.ticket-card,.login-card{
-  background:white;border:1px solid var(--line);border-radius:24px;padding:22px;
-  box-shadow:0 10px 32px rgba(7,89,133,.08)
-}
-.booth-card-head,.admin-card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-.booth-icon{font-size:28px}
-.open-badge{background:#e9fbf4;color:var(--green);font-size:13px;font-weight:900;padding:7px 10px;border-radius:999px}
-.open-badge.closed{background:#f2f4f6;color:#7c8790}
-.booth-metrics,.admin-metrics,.ticket-stats{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0
-}
-.booth-metrics div,.admin-metrics div,.ticket-stats div{
-  background:var(--sky);border-radius:15px;padding:14px
-}
-.booth-metrics span,.admin-metrics span,.ticket-stats span,.current-panel span{
-  display:block;color:var(--muted);font-size:12px;margin-bottom:5px
-}
-.booth-metrics strong,.admin-metrics strong,.ticket-stats strong{font-size:18px}
-.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:14px;padding:14px 18px;font-weight:900;cursor:pointer;text-decoration:none}
-.btn-primary{background:var(--blue);color:white;width:100%}
-.btn-primary:hover{background:var(--blue-dark)}
-.btn-secondary{background:#e8f3f7;color:var(--navy)}
-.btn-light{background:rgba(255,255,255,.16);color:white}
-.btn-danger-outline{background:white;color:var(--red);border:1px solid #f2b7b4;width:100%;margin-top:18px}
-.small-btn{width:auto;padding:10px 14px}
-button:disabled{opacity:.45;cursor:not-allowed}
-.loading-card{background:white;border:1px solid var(--line);border-radius:18px;padding:24px;text-align:center}
-dialog{border:0;background:transparent;width:min(520px,100%);padding:14px}
-dialog::backdrop{background:rgba(4,30,46,.7)}
-.modal-card{position:relative;background:white;border-radius:24px;padding:26px;display:grid;gap:16px}
-.modal-close{position:absolute;right:15px;top:10px;border:0;background:none;font-size:32px;cursor:pointer}
-label{display:grid;gap:8px;font-weight:800}
-input,select{width:100%;border:1px solid #c9dde6;border-radius:13px;padding:14px;background:white}
-.privacy-check{grid-template-columns:22px 1fr;align-items:start;font-weight:500;font-size:14px}
-.privacy-check input{width:auto;margin-top:3px}
-.ticket-page{max-width:600px;padding:28px 0 60px}
-.ticket-card{text-align:center}
-.booth-label{font-weight:900;color:var(--blue);margin:0}
-.sub-label{color:var(--muted);margin:20px 0 5px}
-.ticket-number{font-size:96px;line-height:1;font-weight:900;color:var(--navy)}
-.status-message{margin-top:22px;background:#e9f4f8;border-radius:16px;padding:17px;font-weight:900}
-.status-message.called{background:#fff2bf;color:#7a5100;font-size:21px;animation:pulse 1.1s infinite}
-.status-message.soon{background:#fff7df;color:#8a5200}
-.status-message.cancelled{background:#fff0ef;color:var(--red)}
-.status-message.completed{background:#eafaf3;color:var(--green)}
-.recommend-card{background:#fff8e8;border-radius:16px;padding:16px}
-.recommend-card p{margin:6px 0 0}
-.back-link{display:block;color:var(--blue);margin-top:16px}
-.admin-login-page{min-height:100vh;display:grid;place-items:center;padding:24px}
-.login-card{width:min(480px,100%);display:grid;gap:16px}
-.muted{color:var(--muted)}
-.error-text{color:var(--red);font-weight:700}
-.current-panel{background:var(--navy);color:white;text-align:center;border-radius:17px;padding:18px;margin-top:20px}
-.current-panel span{color:rgba(255,255,255,.72)}
-.current-panel strong{font-size:36px}
-.toggle-wrap{display:flex;align-items:center;gap:8px}
-.toggle-wrap input{width:auto}
-.admin-card .btn-secondary{width:100%;margin-top:9px}
-.center-message{text-align:center;color:var(--muted)}
-@keyframes pulse{50%{transform:scale(1.02)}}
-@media(max-width:780px){
-  .booth-grid,.admin-grid{grid-template-columns:1fr}
-  .hero-icon{display:none}
-  .booth-metrics,.admin-metrics,.ticket-stats{grid-template-columns:1fr 1fr}
-  .booth-metrics div:last-child,.admin-metrics div:last-child,.ticket-stats div:last-child{grid-column:1/-1}
-  .active-ticket,.admin-toolbar{align-items:flex-start;flex-direction:column}
-}
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#ffffff">
+
+  <title>내 대기 현황 | 2026 소래포구축제</title>
+
+  <link
+    rel="stylesheet"
+    href="/assets/style.css"
+  >
+</head>
+
+<body>
+  <header class="hero hero-small">
+    <div class="container">
+      <p class="kicker">
+        2026 소래포구축제
+      </p>
+
+      <h1>
+        내 대기 현황
+      </h1>
+    </div>
+  </header>
+
+
+  <main class="container ticket-page">
+    <section class="ticket-card">
+
+      <!-- 체험명 -->
+      <p
+        id="boothName"
+        class="booth-label"
+      >
+        체험 정보를 확인하고 있습니다.
+      </p>
+
+
+      <!-- 대기번호 -->
+      <p class="sub-label">
+        내 대기번호
+      </p>
+
+      <div
+        id="ticketNumber"
+        class="ticket-number"
+      >
+        -
+      </div>
+
+
+      <!-- 현재 상태 -->
+      <div
+        id="statusMessage"
+        class="status-message"
+        role="status"
+        aria-live="polite"
+      >
+        대기 현황을 확인하고 있습니다.
+      </div>
+
+
+      <!-- 대기 현황 -->
+      <div class="ticket-stats">
+        <div>
+          <span>
+            현재 입장
+          </span>
+
+          <strong id="currentNumber">
+            -
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            내 앞 대기팀
+          </span>
+
+          <strong id="aheadCount">
+            -
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            예상 대기시간
+          </span>
+
+          <strong id="estimatedTime">
+            -
+          </strong>
+        </div>
+      </div>
+
+
+      <!-- 주변 콘텐츠 안내 -->
+      <section class="recommend-card">
+        <strong>
+          기다리는 동안 둘러보세요
+        </strong>
+
+        <p>
+          먹거리존 · 수산시장 · K-뷰티존
+        </p>
+      </section>
+
+
+      <!-- 알림 신청 -->
+      <section class="notification-card">
+        <strong>
+          입장 순서를 놓치지 마세요
+        </strong>
+
+        <p id="notificationStatus">
+          알림을 허용하면 입장 순서가 되었을 때 알려드립니다.
+        </p>
+
+        <button
+          id="notificationButton"
+          class="btn btn-primary"
+          type="button"
+        >
+          입장 알림 받기
+        </button>
+      </section>
+
+
+      <!-- 대기 취소 -->
+      <button
+        id="cancelButton"
+        class="btn btn-danger-outline"
+        type="button"
+      >
+        대기 취소
+      </button>
+
+
+      <!-- 다른 체험 -->
+      <a
+        href="/"
+        class="back-link"
+      >
+        다른 체험 보기
+      </a>
+
+    </section>
+  </main>
+
+
+  <script
+    type="module"
+    src="/assets/waiting.js"
+  ></script>
+</body>
+</html>
